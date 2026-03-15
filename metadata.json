@@ -1,0 +1,7 @@
+{
+  "name": "Bihar Bowl",
+  "description": "A premium traditional Bihar cuisine brand bringing the authentic taste of Litti Chokha and more from Bihar to the world.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
