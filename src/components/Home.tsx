@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronRight, 
   Star, 
@@ -25,7 +25,14 @@ import {
   VolumeX,
   IndianRupee,
   Quote,
-  HeartHandshake
+  HeartHandshake,
+  Heart,
+  Camera,
+  X,
+  ShoppingBag,
+  Clock,
+  Maximize2,
+  Eye
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -38,6 +45,111 @@ interface MenuItem {
   image_url: string;
   is_veg: number;
 }
+
+const popularDishes = [
+  {
+    id: 1,
+    name: "Classic Sattu Litti",
+    category: "veg",
+    tagline: "Authentic Charcoal Wood-Fired",
+    description: "Traditional roasted whole-wheat balls filled with spiced Bihar Chana Sattu, served with smoky baingan bharta, aloo chokha, and zesty mint chutney.",
+    price: 120,
+    image_url: "/littichokha.png",
+    rating: "4.9",
+    reviews: "1.4k+",
+    is_veg: 1,
+    badge: "👑 All-Time Bestseller",
+    badgeColor: "from-amber-500 to-orange-500",
+    prepTime: "12 mins",
+    serves: "1-2 Persons",
+    tags: ["Wood Charcoal", "Pure Chana Sattu", "Smoky Chokha"]
+  },
+  {
+    id: 2,
+    name: "Royal Desi Ghee Litti",
+    category: "veg",
+    tagline: "Lavishly Dipped in A2 Cow Ghee",
+    description: "Crisp-roasted golden littis cracked open and drenched lavishly in warm desi cow ghee. A melt-in-mouth heritage experience with baingan chokha and dal.",
+    price: 150,
+    image_url: "/gallery2.jpg",
+    rating: "5.0",
+    reviews: "2.1k+",
+    is_veg: 1,
+    badge: "🧈 100% Desi Cow Ghee",
+    badgeColor: "from-amber-500 to-yellow-600",
+    prepTime: "15 mins",
+    serves: "1-2 Persons",
+    tags: ["A2 Pure Ghee", "Melt-In-Mouth", "Royal Recipe"]
+  },
+  {
+    id: 3,
+    name: "Smoky Paneer Tikka Litti",
+    category: "veg",
+    tagline: "Tandoori Spiced Paneer & Sattu",
+    description: "A gourmet fusion featuring rich char-grilled paneer cubes infused with ajwain, kalonji, spiced roasted gram flour, and smoky tandoor spices.",
+    price: 180,
+    image_url: "/menu_paneer_tikka.png",
+    rating: "4.8",
+    reviews: "980+",
+    is_veg: 1,
+    badge: "🔥 Chef's Special",
+    badgeColor: "from-rose-500 to-orange-600",
+    prepTime: "15 mins",
+    serves: "1-2 Persons",
+    tags: ["Tandoori Paneer", "Herb Infused", "High Protein"]
+  },
+  {
+    id: 4,
+    name: "Bihar Bowl Special Thali",
+    category: "combos",
+    tagline: "Grand Mithila & Magadh Feast",
+    description: "The complete royal spread: 2 hot Ghee Littis, Baingan Chokha, Aloo Chokha, Spiced Dal Tadka, Kesariya Kheer, salad, and signature pickles.",
+    price: 250,
+    image_url: "/combo_thali.jpg",
+    rating: "4.9",
+    reviews: "1.9k+",
+    is_veg: 1,
+    badge: "🍱 Complete Royal Feast",
+    badgeColor: "from-amber-600 to-yellow-600",
+    prepTime: "18 mins",
+    serves: "1-2 Persons",
+    tags: ["Grand Thali", "Kesariya Kheer", "Dal Tadka"]
+  },
+  {
+    id: 5,
+    name: "Champaran Handi Mutton Litti",
+    category: "nonveg",
+    tagline: "Slow-Cooked in Sealed Clay Pot",
+    description: "Tender goat meat slow-simmered in rustic earthenware with whole garlic pods and mustard oil, served alongside wood-fired crispy sattu littis.",
+    price: 350,
+    image_url: "/menu_mutton.png",
+    rating: "4.9",
+    reviews: "1.7k+",
+    is_veg: 0,
+    badge: "🍗 Ahuna Claypot Meat",
+    badgeColor: "from-red-600 to-orange-600",
+    prepTime: "20 mins",
+    serves: "1-2 Persons",
+    tags: ["Ahuna Handi", "Tender Mutton", "Mustard Oil Gravy"]
+  },
+  {
+    id: 6,
+    name: "Sizzling 4-Flavor Platter",
+    category: "combos",
+    tagline: "Assorted Mini Gourmet Littis",
+    description: "Party platter featuring 4 varieties: Classic Sattu, Paneer Tikka, Corn Cheese, and Mushroom Litti served with 4 artisanal dips and chutneys.",
+    price: 320,
+    image_url: "/combo_platter.png",
+    rating: "4.8",
+    reviews: "820+",
+    is_veg: 1,
+    badge: "🎉 Perfect for Sharing",
+    badgeColor: "from-orange-500 to-pink-500",
+    prepTime: "16 mins",
+    serves: "2-3 Persons",
+    tags: ["4 Mini Flavors", "Cheese & Paneer", "4 Chutneys"]
+  }
+];
 
 const Home = () => {
   const [featuredItems, setFeaturedItems] = useState<MenuItem[]>([]);
@@ -53,6 +165,30 @@ const Home = () => {
   });
   const [franchiseLoading, setFranchiseLoading] = useState(false);
   const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const [isFoodieHovered, setIsFoodieHovered] = useState(false);
+  const [activeFoodieCard, setActiveFoodieCard] = useState<number | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<null | {
+    id: number;
+    img: string;
+    title: string;
+    cat: string;
+    likes: string;
+  }>(null);
+  const [popularCategory, setPopularCategory] = useState<'all' | 'veg' | 'nonveg' | 'combos'>('all');
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPhoto(null);
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   // Video Section Player Controls
   const [isVideoMuted, setIsVideoMuted] = useState(true);
@@ -1382,232 +1518,873 @@ const Home = () => {
       </section>
 
       {/* Taste the Tradition Section */}
-      <section className="py-32 bg-brand-earth/10 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 mithila-pattern" />
+      <section className="py-20 sm:py-28 lg:py-32 bg-gradient-to-b from-[#FAF6EE] via-[#FFFDF9] to-[#F5ECE0] relative overflow-hidden border-t border-b border-brand-orange/15">
+        {/* Subtle decorative glow & Mithila pattern */}
+        <div className="absolute inset-0 opacity-[0.035] mithila-pattern pointer-events-none" />
+        <div className="absolute top-1/3 -left-32 w-80 sm:w-96 h-80 sm:h-96 bg-brand-orange/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-10 -right-32 w-80 sm:w-96 h-80 sm:h-96 bg-amber-400/15 rounded-full blur-[120px] pointer-events-none" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div className="order-2 lg:order-1 space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-brand-orange font-bold text-sm uppercase tracking-[0.3em]">Taste the Tradition</h2>
-                <h3 className="text-7xl font-bold text-brand-brown leading-tight font-display">Authentic <span className="text-brand-orange italic">Bihar</span> On Your Plate</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            
+            {/* Left Column: Narrative, 4 Feature Micro-Cards, CTAs (7 cols) */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="lg:col-span-7 space-y-6 sm:space-y-8"
+            >
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/25 text-brand-orange text-xs font-black uppercase tracking-[0.25em] mb-4 shadow-sm">
+                  <Flame size={14} className="text-brand-orange animate-pulse" />
+                  <span>Taste The Heritage • Estd. 2020</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-brand-brown leading-[1.15] font-display tracking-tight">
+                  Authentic <span className="bg-gradient-to-r from-brand-orange via-amber-600 to-brand-brown bg-clip-text text-transparent italic font-serif">Bihar</span> <br className="hidden sm:inline" />
+                  On Your Plate
+                </h2>
+                <p className="text-xs sm:text-sm font-bold text-brand-orange uppercase tracking-widest mt-2 flex items-center gap-2">
+                  <Sparkles size={15} />
+                  <span>Wood-Fired • 100% Desi Cow Ghee • Pure Chana Sattu</span>
+                </p>
               </div>
-              <p className="text-xl text-brand-brown/70 leading-relaxed">
-                We bring you the soul of Bihar through our traditional recipes. From the smoky wood-fired Litti to the refreshing Sattu Sharbat, every bite is a journey back to the roots.
+
+              <p className="text-base sm:text-lg text-brand-brown/80 leading-relaxed font-medium">
+                We bring you the timeless soul of Bihar through our authentic heritage recipes. From the smoky charcoal-roasted Litti dipped in pure cow ghee to refreshing earthen-pot Sattu Sharbat, every single bite is a soulful journey back to our cultural roots.
               </p>
-              <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <div className="text-4xl font-bold text-brand-orange">100%</div>
-                  <p className="text-brand-brown/60 font-medium uppercase tracking-widest text-xs">Desi Ghee</p>
+
+              {/* 4 Feature Micro-Cards (2x2 Grid) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div className="flex items-center space-x-3.5 p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-brand-orange/20 shadow-md shadow-brand-brown/5 hover:border-brand-orange hover:-translate-y-0.5 transition-all">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center text-white shadow-md shadow-brand-orange/25 shrink-0">
+                    <Flame size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-brand-brown uppercase tracking-wider">100% Desi Ghee</h4>
+                    <p className="text-xs text-brand-brown/65 font-medium">Pure cow ghee dip for rich aroma</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-4xl font-bold text-brand-orange">Wood</div>
-                  <p className="text-brand-brown/60 font-medium uppercase tracking-widest text-xs">Fired Cooking</p>
+
+                <div className="flex items-center space-x-3.5 p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-amber-500/20 shadow-md shadow-brand-brown/5 hover:border-amber-500 hover:-translate-y-0.5 transition-all">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-500 flex items-center justify-center text-white shadow-md shadow-amber-500/25 shrink-0">
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-brand-brown uppercase tracking-wider">Wood-Fired Roasting</h4>
+                    <p className="text-xs text-brand-brown/65 font-medium">Slow-charred over open coal embers</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3.5 p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-500/20 shadow-md shadow-brand-brown/5 hover:border-emerald-500 hover:-translate-y-0.5 transition-all">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-green-500 flex items-center justify-center text-white shadow-md shadow-green-500/25 shrink-0">
+                    <Award size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-brand-brown uppercase tracking-wider">Superfood Sattu</h4>
+                    <p className="text-xs text-brand-brown/65 font-medium">100% roasted chana, zero adulteration</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3.5 p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-brand-brown/20 shadow-md shadow-brand-brown/5 hover:border-brand-brown hover:-translate-y-0.5 transition-all">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-brown to-brand-brown-light flex items-center justify-center text-white shadow-md shadow-brand-brown/25 shrink-0">
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-brand-brown uppercase tracking-wider">Authentic Chokha</h4>
+                    <p className="text-xs text-brand-brown/65 font-medium">Wood-smoked baingan & mustard oil</p>
+                  </div>
                 </div>
               </div>
-              <div className="pt-8">
-                <Link to="/menu" className="inline-flex items-center space-x-4 bg-brand-brown text-white px-10 py-5 rounded-2xl font-bold hover:bg-brand-orange transition-all shadow-xl group">
-                  <span>Explore Our Menu</span>
-                  <ChevronRight size={24} className="group-hover:translate-x-2 transition-transform" />
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-wrap items-center gap-4">
+                <Link 
+                  to="/menu" 
+                  className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-brand-brown via-[#5A2E16] to-brand-brown hover:from-brand-orange hover:to-amber-600 text-white px-8 py-4 rounded-xl font-extrabold text-sm sm:text-base shadow-xl shadow-brand-brown/25 hover:scale-105 active:scale-95 transition-all group"
+                >
+                  <span>Explore Full Menu</span>
+                  <ChevronRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
+                </Link>
+
+                <Link
+                  to="/locations"
+                  className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange border border-brand-orange/30 px-6 py-4 rounded-xl font-extrabold text-sm sm:text-base hover:scale-105 active:scale-95 transition-all"
+                >
+                  <MapPin size={16} />
+                  <span>Find 50+ Outlets</span>
                 </Link>
               </div>
-            </div>
-            <div className="order-1 lg:order-2 relative">
-              <div className="rounded-[3rem] overflow-hidden shadow-2xl">
-                <img src="/littichokhaads.png" alt="Traditional Litti" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            </motion.div>
+
+            {/* Right Column: Luxury Card Showcase with Floating Elements (5 cols) */}
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="lg:col-span-5 relative"
+            >
+              <div className="relative max-w-md mx-auto">
+                {/* Ambient Soft Glow Behind Photo */}
+                <div className="absolute -inset-4 bg-gradient-to-tr from-brand-orange/30 via-amber-400/25 to-brand-brown/20 rounded-[3rem] blur-2xl -z-10" />
+
+                {/* Double Bordered Luxury Card */}
+                <div className="p-3 sm:p-4 bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border-2 border-brand-orange/20 relative group">
+                  
+                  {/* Floating Luxury Badge (Replaces old clunky neon circle) */}
+                  <div className="absolute -top-3 -right-2 sm:-top-3.5 sm:-right-3.5 bg-gradient-to-r from-brand-orange to-amber-600 text-white px-4 py-2 rounded-2xl shadow-xl flex items-center gap-1.5 border-2 border-white text-xs font-black tracking-wider uppercase z-20 animate-float">
+                    <Sparkles size={14} className="text-yellow-200" />
+                    <span>Bihar's Pride</span>
+                  </div>
+
+                  {/* Main Visual */}
+                  <div className="aspect-[2/3] rounded-[2rem] overflow-hidden relative">
+                    <img 
+                      src="/littichokhaads.png" 
+                      alt="Traditional Bihar Bowl Litti Chokha" 
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
+                      referrerPolicy="no-referrer" 
+                    />
+                    
+                    {/* Dark gradient at bottom */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+
+                    {/* Luxury Overlay Badge at bottom */}
+                    <div className="absolute bottom-4 left-4 right-4 bg-black/65 backdrop-blur-xl p-4 rounded-2xl border border-white/20 shadow-2xl text-white">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-black text-lg sm:text-xl leading-tight">
+                            Swaad Bihar Ka!
+                          </p>
+                          <p className="text-amber-400 font-bold uppercase tracking-wider text-[11px] mt-1 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            1 Lakh+ Plates Served Daily
+                          </p>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center text-white shadow-lg shadow-brand-orange/40 shrink-0">
+                          <Flame size={20} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
               </div>
-              <div className="absolute -top-12 -left-12 w-48 h-48 bg-brand-yellow rounded-full flex items-center justify-center text-center p-6 transform -rotate-12 shadow-2xl animate-float">
-                <p className="text-brand-brown font-black text-xl leading-tight uppercase">Bihar's Pride</p>
-              </div>
-            </div>
+            </motion.div>
+
           </div>
         </div>
       </section>
 
-      {/* Foodie Moments Section */}
-      <section className="py-32 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20 space-y-4">
-            <h2 className="text-brand-orange font-bold text-sm uppercase tracking-[0.3em]">Community</h2>
-            <h3 className="text-6xl font-bold text-brand-brown font-display">Foodie <span className="text-brand-orange italic">Moments</span></h3>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="space-y-6">
-              <div className="rounded-3xl overflow-hidden shadow-xl h-48 border-4 border-brand-earth/20">
-                <img src="/menu1.jpg" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Litti" referrerPolicy="no-referrer" />
-              </div>
-            </div>
-            <div className="space-y-6 pt-12">
-              <div className="rounded-3xl overflow-hidden shadow-xl h-60 border-4 border-brand-earth/20">
-                <img src="/menu3.png" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Paneer" referrerPolicy="no-referrer" />
-              </div>
-              <div className="rounded-3xl overflow-hidden shadow-xl h-48 border-4 border-brand-earth/20">
-                <img src="/menu_mushroom.png" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Mushroom" referrerPolicy="no-referrer" />
-              </div>
-            </div>
-            <div className="space-y-6">
-              <div className="rounded-3xl overflow-hidden shadow-xl h-48 border-4 border-brand-earth/20">
-                <img src="/menu_chicken_keema.png" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Chaap" referrerPolicy="no-referrer" />
-              </div>
-              <div className="rounded-3xl overflow-hidden shadow-xl h-60 border-4 border-brand-earth/20">
-                <img src="/menu_mutton.png" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Biryani" referrerPolicy="no-referrer" />
-              </div>
-            </div>
-            <div className="space-y-6 pt-12">
-              <div className="rounded-3xl overflow-hidden shadow-xl h-60 border-4 border-brand-earth/20">
-                <img src="/menu_fish.png" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Rolls" referrerPolicy="no-referrer" />
-              </div>
-              <div className="rounded-3xl overflow-hidden shadow-xl h-48 border-4 border-brand-earth/20">
-                <img src="/menu_egg.png" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Momos" referrerPolicy="no-referrer" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-20 text-center">
-            <Link to="/gallery" className="inline-flex items-center space-x-4 text-brand-brown font-bold text-xl hover:text-brand-orange transition-colors group">
-              <span>View All Moments</span>
-              <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Featured Dish: The Soul of Bihar (Litti Chokha Showcase) */}
+      <section className="py-20 sm:py-28 bg-[#FFFDF9] relative overflow-hidden">
+        {/* Subtle decorative Mithila elements & ambient glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-brand-orange/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-400/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.03] mithila-pattern pointer-events-none" />
 
-      {/* Featured Dish */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 mithila-pattern opacity-5 -translate-x-1/2 -translate-y-1/2" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mithila-border rounded-[4rem] p-4 lg:p-12 bg-brand-earth/10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Main Showcase Card with Double-layered Luxury Border */}
+          <div className="relative rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-14 bg-gradient-to-br from-[#FFFDF9] via-[#FAF6EE] to-[#F5ECE0] border-2 border-brand-orange/25 shadow-2xl">
+            
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+              
+              {/* Left Column: Full Uncropped Portrait Poster in Exact 2:3 Frame (5 cols) */}
               <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="relative"
+                transition={{ duration: 0.8 }}
+                className="lg:col-span-5 relative flex justify-center"
               >
-                <div className="rounded-[2rem] overflow-hidden shadow-2xl">
-                  <img 
-                    src="/littichokhaads.png" 
-                    alt="Litti Chokha" 
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
+                <div className="relative w-full max-w-[360px] sm:max-w-[400px]">
+                  {/* Ambient Glow behind frame */}
+                  <div className="absolute -inset-3 bg-gradient-to-tr from-brand-orange/25 via-amber-400/20 to-brand-brown/15 rounded-[2.5rem] blur-xl -z-10" />
+
+                  {/* Picture Frame with subtle double border */}
+                  <div className="p-2 sm:p-2.5 bg-white/95 backdrop-blur-md rounded-[2.2rem] sm:rounded-[2.5rem] shadow-2xl border-2 border-brand-orange/20 relative group">
+                    {/* Exact 2:3 aspect ratio matching the 1024x1536 resolution: Zero Crop, Full Image Display */}
+                    <div className="aspect-[2/3] w-full rounded-[1.8rem] sm:rounded-[2rem] overflow-hidden relative bg-black/5">
+                      <img 
+                        src="/littichokhaads.png" 
+                        alt="Bihar Bowl - Swaad Bihar Ka, Bihar Bowl Se!" 
+                        className="w-full h-full object-cover rounded-[1.8rem] sm:rounded-[2rem] transform group-hover:scale-102 transition-transform duration-700 block"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  </div>
                 </div>
               </motion.div>
-              
-              <div className="space-y-10">
-                <div className="inline-block bg-brand-orange/10 px-4 py-2 rounded-md">
-                  <span className="text-brand-orange font-bold text-sm uppercase tracking-widest">Featured Dish</span>
+
+              {/* Right Column: Culinary Details, 4 Pillars, CTAs (7 cols) */}
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="lg:col-span-7 space-y-6 sm:space-y-7"
+              >
+                <div>
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/25 text-brand-orange text-xs font-black uppercase tracking-[0.25em] mb-3 shadow-sm">
+                    <Sparkles size={14} className="text-brand-orange" />
+                    <span>Featured Dish • Signature Special</span>
+                  </div>
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-brand-brown font-display tracking-tight leading-[1.15]">
+                    The Soul of Bihar: <br />
+                    <span className="bg-gradient-to-r from-brand-orange via-amber-600 to-brand-brown bg-clip-text text-transparent italic font-serif">
+                      Litti Chokha
+                    </span>
+                  </h2>
                 </div>
-                <h2 className="text-5xl md:text-6xl font-bold text-brand-brown leading-tight">The Soul of Bihar: <span className="text-brand-orange">Litti Chokha</span></h2>
-                <p className="text-xl text-brand-brown/70 leading-relaxed">
-                  Litti is a traditional dish from the Indian state of Bihar. It is made of whole wheat flour, stuffed with sattu (roasted chickpea flour) mixed with herbs and spices and then roasted over coal or wood then it is tossed with much ghee.
+
+                <p className="text-base sm:text-lg text-brand-brown/80 leading-relaxed font-medium">
+                  Litti is a traditional dish from the Indian state of Bihar. It is made of whole wheat flour, stuffed with sattu (roasted chickpea flour) mixed with herbs and spices and then roasted over coal or wood then it is tossed with much ghee. Served hot with authentic smoky roasted eggplant-potato chokha.
                 </p>
-                <div className="grid grid-cols-2 gap-6">
+
+                {/* 4 Feature Micro-Cards in a 2x2 Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                   {[
-                    { title: 'Authentic Sattu', desc: 'Spiced chickpea flour' },
-                    { title: 'Wood-fired', desc: 'Traditional roasting' },
-                    { title: 'Desi Ghee', desc: 'Pure cow ghee' },
-                    { title: 'Smoky Chokha', desc: 'Roasted eggplant' }
+                    { title: 'Authentic Sattu', desc: 'Spiced roasted chickpea flour', icon: Sparkles },
+                    { title: 'Wood-fired', desc: 'Traditional wood & coal roasting', icon: Flame },
+                    { title: 'Desi Ghee', desc: 'Pure desi cow ghee dip', icon: Award },
+                    { title: 'Smoky Chokha', desc: 'Fire-roasted eggplant & aloo mash', icon: CheckCircle2 }
                   ].map((item, i) => (
-                    <div key={i} className="flex items-start space-x-3">
-                      <div className="mt-1 bg-brand-orange/20 p-1 rounded-full">
-                        <CheckCircle2 className="text-brand-orange" size={16} />
+                    <div 
+                      key={i} 
+                      className="flex items-start space-x-3.5 p-3.5 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-sm border border-brand-orange/20 shadow-sm hover:border-brand-orange hover:-translate-y-0.5 transition-all"
+                    >
+                      <div className="mt-0.5 w-9 h-9 rounded-xl bg-brand-orange/10 flex items-center justify-center text-brand-orange shrink-0">
+                        <item.icon size={18} />
                       </div>
                       <div>
-                        <p className="font-bold text-brand-brown">{item.title}</p>
-                        <p className="text-xs text-brand-brown/60">{item.desc}</p>
+                        <h4 className="font-bold text-brand-brown text-sm sm:text-base leading-tight">{item.title}</h4>
+                        <p className="text-xs text-brand-brown/65 font-medium mt-0.5">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="pt-4">
-                  <Link to="/menu" className="inline-flex items-center space-x-3 bg-brand-brown text-white px-8 py-4 rounded-md font-bold hover:bg-brand-orange transition-all shadow-lg group">
+
+                {/* Action Buttons */}
+                <div className="pt-2 flex flex-wrap items-center gap-4">
+                  <Link 
+                    to="/menu" 
+                    className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-brand-brown via-[#5A2E16] to-brand-brown hover:from-brand-orange hover:to-amber-600 text-white px-8 py-4 rounded-xl font-extrabold text-sm sm:text-base shadow-xl shadow-brand-brown/25 hover:scale-105 active:scale-95 transition-all group"
+                  >
                     <span>Explore Menu</span>
-                    <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
+                  </Link>
+
+                  <Link 
+                    to="/locations" 
+                    className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange border border-brand-orange/30 px-6 py-4 rounded-xl font-extrabold text-sm sm:text-base hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <MapPin size={16} />
+                    <span>Locate Nearest Branch</span>
                   </Link>
                 </div>
-              </div>
+              </motion.div>
+
             </div>
+
           </div>
+
         </div>
       </section>
 
-      {/* Photo Gallery Preview */}
-      <section className="py-24 bg-brand-earth/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-            <div className="max-w-xl">
-              <h2 className="text-4xl font-bold text-brand-brown mb-4">Moments at <span className="text-brand-orange">Bihar Bowl</span></h2>
-              <p className="text-brand-brown/60">Our customers share their love for authentic Bihari flavors. Join the community!</p>
+      {/* Foodie Moments & Community Feasts (Interactive Cluster & Spread Floating Showcase) */}
+      <section className="py-20 sm:py-28 lg:py-32 bg-gradient-to-b from-[#FAF6EE] via-white to-[#FAF6EE] relative overflow-hidden border-b border-brand-orange/15">
+        <div className="absolute inset-0 opacity-[0.03] mithila-pattern pointer-events-none" />
+        
+        {/* Ambient atmospheric glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-orange/10 rounded-full blur-[140px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Section Header with Enlarged Prominent Typography */}
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-brand-orange/10 border border-brand-orange/25 text-brand-orange text-xs sm:text-sm font-black uppercase tracking-[0.25em] mb-4 shadow-sm">
+              <Camera size={16} className="text-brand-orange" />
+              <span>Community • #BiharBowlFoodie</span>
             </div>
-            <Link to="/gallery" className="text-brand-orange font-bold hover:underline flex items-center space-x-2">
-              <span>View Full Gallery</span>
-              <ChevronRight size={18} />
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-brand-brown font-display tracking-tight leading-tight">
+              Foodie <span className="bg-gradient-to-r from-brand-orange via-amber-600 to-brand-brown bg-clip-text text-transparent italic">Moments</span>
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl text-brand-brown/80 font-medium mt-4 max-w-2xl mx-auto leading-relaxed">
+              Real smiles, steaming earthen kulhads, and unforgettable feasts captured across our 50+ branches nationwide.
+            </p>
+          </div>
+          
+          {/* Interactive Floating Canvas (Clusters on idle, separates on cursor hover) */}
+          <div 
+            onMouseEnter={() => setIsFoodieHovered(true)}
+            onMouseLeave={() => { setIsFoodieHovered(false); setActiveFoodieCard(null); }}
+            onTouchStart={() => setIsFoodieHovered(!isFoodieHovered)}
+            className="relative w-full min-h-[520px] sm:min-h-[620px] lg:min-h-[680px] flex items-center justify-center my-6 rounded-3xl bg-brand-orange/[0.02] border border-brand-orange/10 p-4 transition-colors hover:bg-brand-orange/[0.04] cursor-pointer"
+          >
+            {/* 8 Floating Cards */}
+            {[
+              {
+                id: 1,
+                img: '/menu1.jpg',
+                title: 'Vintage Menu Board',
+                cat: 'Menu Sheet',
+                likes: '3.1k',
+                clusterX: -34,
+                clusterY: -22,
+                clusterRot: -9,
+                spreadX: -360,
+                spreadY: -110,
+                spreadRot: -5,
+                floatDuration: 4.2
+              },
+              {
+                id: 2,
+                img: '/menu3.png',
+                title: 'Mithila Traditional Menu',
+                cat: 'Heritage Menu',
+                likes: '2.6k',
+                clusterX: 28,
+                clusterY: -25,
+                clusterRot: 7,
+                spreadX: -180,
+                spreadY: -150,
+                spreadRot: 3,
+                floatDuration: 5.1
+              },
+              {
+                id: 3,
+                img: '/combo_thali.jpg',
+                title: 'Royal Bihar Thali',
+                cat: 'Grand Feast',
+                likes: '4.2k',
+                clusterX: 0,
+                clusterY: 0,
+                clusterRot: -1,
+                spreadX: 40,
+                spreadY: -140,
+                spreadRot: -2,
+                floatDuration: 4.6
+              },
+              {
+                id: 4,
+                img: '/combo_platter.png',
+                title: 'Bihari Sizzling Platter',
+                cat: 'Chef Special',
+                likes: '2.8k',
+                clusterX: -22,
+                clusterY: 22,
+                clusterRot: -4,
+                spreadX: 250,
+                spreadY: -100,
+                spreadRot: 5,
+                floatDuration: 5.4
+              },
+              {
+                id: 5,
+                img: '/menu_mushroom.png',
+                title: 'Mushroom & Sattu Masala',
+                cat: 'Vegetarian',
+                likes: '1.9k',
+                clusterX: 30,
+                clusterY: 18,
+                clusterRot: 6,
+                spreadX: -270,
+                spreadY: 120,
+                spreadRot: 4,
+                floatDuration: 4.8
+              },
+              {
+                id: 6,
+                img: '/menu_chicken_keema.png',
+                title: 'Champaran Handi Special',
+                cat: 'Regional Non-Veg',
+                likes: '3.4k',
+                clusterX: -12,
+                clusterY: -12,
+                clusterRot: 3,
+                spreadX: -70,
+                spreadY: 140,
+                spreadRot: -4,
+                floatDuration: 5.2
+              },
+              {
+                id: 7,
+                img: '/menu_mutton.png',
+                title: 'Slow-Cooked Mutton Litti',
+                cat: 'Royal Feast',
+                likes: '3.9k',
+                clusterX: 18,
+                clusterY: -6,
+                clusterRot: -5,
+                spreadX: 130,
+                spreadY: 130,
+                spreadRot: 3,
+                floatDuration: 4.4
+              },
+              {
+                id: 8,
+                img: '/menu_egg.png',
+                title: 'Desi Egg Masala Platter',
+                cat: 'Comfort Food',
+                likes: '2.1k',
+                clusterX: -8,
+                clusterY: 12,
+                clusterRot: 5,
+                spreadX: 330,
+                spreadY: 110,
+                spreadRot: -3,
+                floatDuration: 5.7
+              }
+            ].map((card) => {
+              const scaleFactor = windowWidth < 640 ? 0.38 : windowWidth < 1024 ? 0.65 : 1.0;
+              const targetX = (isFoodieHovered ? card.spreadX : card.clusterX) * scaleFactor;
+              const targetY = (isFoodieHovered ? card.spreadY : card.clusterY) * scaleFactor;
+              const targetRot = isFoodieHovered ? card.spreadRot : card.clusterRot;
+              const isCurrentActive = activeFoodieCard === card.id;
+
+              return (
+                <motion.div
+                  key={card.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedPhoto(card);
+                  }}
+                  onMouseEnter={(e) => { e.stopPropagation(); setActiveFoodieCard(card.id); }}
+                  onMouseLeave={(e) => { e.stopPropagation(); setActiveFoodieCard(null); }}
+                  animate={{
+                    x: targetX,
+                    y: isFoodieHovered ? [targetY - 8, targetY + 8, targetY - 8] : [targetY - 5, targetY + 5, targetY - 5],
+                    rotate: isCurrentActive ? 0 : targetRot,
+                    scale: isCurrentActive ? 1.15 : isFoodieHovered ? 1.0 : 0.94,
+                    zIndex: isCurrentActive ? 50 : isFoodieHovered ? 20 : 30 - card.id
+                  }}
+                  transition={{
+                    x: { type: "spring", stiffness: 90, damping: 14 },
+                    rotate: { type: "spring", stiffness: 90, damping: 14 },
+                    scale: { duration: 0.3 },
+                    y: {
+                      repeat: Infinity,
+                      duration: card.floatDuration,
+                      ease: "easeInOut"
+                    }
+                  }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer pointer-events-auto"
+                >
+                  <div className="w-40 sm:w-52 lg:w-60 p-1.5 sm:p-2.5 bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl hover:shadow-2xl border-2 border-brand-orange/20 hover:border-brand-orange transition-colors">
+                    <div className="aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden relative bg-black">
+                      <img 
+                        src={card.img} 
+                        alt={card.title} 
+                        className="w-full h-full object-cover transform hover:scale-108 transition-transform duration-700 block"
+                        referrerPolicy="no-referrer"
+                      />
+                      
+                      {/* Gradient for caption legibility */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+
+                      {/* Top Tag Badge */}
+                      <div className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/20 text-[10px] sm:text-xs font-bold text-amber-300">
+                        {card.cat}
+                      </div>
+
+                      {/* Bottom Info with Like count */}
+                      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
+                        <p className="text-white font-black text-xs sm:text-sm leading-tight pr-1 truncate">
+                          {card.title}
+                        </p>
+                        <div className="flex items-center gap-1 text-xs font-bold text-white/90 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full shrink-0">
+                          <Heart size={12} className="text-rose-400 fill-rose-400" />
+                          <span>{card.likes}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+          
+          {/* View Full Gallery CTA */}
+          <div className="mt-8 text-center">
+            <Link 
+              to="/gallery" 
+              className="inline-flex items-center space-x-3 bg-white hover:bg-brand-orange text-brand-brown hover:text-white border-2 border-brand-orange/30 hover:border-brand-orange px-8 py-3.5 rounded-xl font-extrabold text-sm sm:text-base shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all group"
+            >
+              <span>Explore Full Photo Gallery (50+ Moments)</span>
+              <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
             </Link>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { id: 1, img: '/gallery1.jpg' },
-              { id: 2, img: '/gallery2.jpg' },
-              { id: 3, img: '/gallery3.jpg' },
-              { id: 4, img: '/gallery4.jpg' }
-            ].map((item, idx) => (
-              <motion.div 
-                key={item.id}
-                whileHover={{ scale: 1.05 }}
-                className="rounded-xl overflow-hidden shadow-lg"
+
+        </div>
+
+        {/* Fullscreen Photo Lightbox Modal */}
+        <AnimatePresence>
+          {selectedPhoto && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setSelectedPhoto(null)}
+              className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 lg:p-8 cursor-zoom-out"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.85, y: 20 }}
+                transition={{ type: "spring", stiffness: 260, damping: 25 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative max-w-4xl w-full max-h-[90vh] bg-[#1C0B03] rounded-3xl sm:rounded-[2.5rem] p-3 sm:p-5 border-2 border-brand-orange/40 shadow-2xl flex flex-col items-center cursor-default overflow-hidden"
               >
-                <div className="aspect-square rounded-lg overflow-hidden">
+                {/* Close Button */}
+                <button 
+                  onClick={() => setSelectedPhoto(null)}
+                  aria-label="Close photo preview"
+                  className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full bg-black/60 hover:bg-brand-orange text-white flex items-center justify-center border border-white/20 shadow-xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                >
+                  <X size={22} />
+                </button>
+
+                {/* Full Image Display */}
+                <div className="w-full flex-1 max-h-[70vh] rounded-2xl overflow-hidden relative bg-black flex items-center justify-center">
                   <img 
-                    src={item.img} 
-                    alt={`Moment ${item.id}`} 
-                    className="w-full h-full object-cover"
+                    src={selectedPhoto.img} 
+                    alt={selectedPhoto.title} 
+                    className="max-h-[70vh] w-auto max-w-full object-contain rounded-2xl"
                     referrerPolicy="no-referrer"
                   />
                 </div>
+
+                {/* Bottom Details Bar */}
+                <div className="w-full pt-4 px-2 sm:px-4 flex flex-wrap items-center justify-between gap-3 text-white">
+                  <div>
+                    <div className="inline-block px-3 py-1 rounded-full bg-brand-orange/20 border border-brand-orange/40 text-amber-300 text-xs font-black uppercase tracking-wider mb-1.5">
+                      {selectedPhoto.cat}
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black font-display text-white">
+                      {selectedPhoto.title}
+                    </h3>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-sm font-bold text-white">
+                      <Heart size={16} className="text-rose-400 fill-rose-400" />
+                      <span>{selectedPhoto.likes} Likes</span>
+                    </div>
+
+                    <button 
+                      onClick={() => setSelectedPhoto(null)}
+                      className="px-5 py-2 rounded-xl bg-white/15 hover:bg-brand-orange text-white text-xs sm:text-sm font-bold border border-white/20 transition-all cursor-pointer"
+                    >
+                      Close Preview
+                    </button>
+                  </div>
+                </div>
               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* Moments at Bihar Bowl (Continuous Infinite Looping Rotating Marquee Carousel) */}
+      <section className="py-20 sm:py-28 bg-[#FAF6EE] relative overflow-hidden border-b border-brand-orange/15">
+        <div className="absolute inset-0 opacity-[0.035] mithila-pattern pointer-events-none" />
+        
+        {/* Soft background palace watermark */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-10 bg-cover bg-center"
+          style={{ backgroundImage: "url('/fullbg.png')" }}
+        />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mb-10 sm:mb-14">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/25 text-brand-orange text-xs sm:text-sm font-black uppercase tracking-[0.25em] mb-3 shadow-sm">
+                <Sparkles size={14} className="text-brand-orange" />
+                <span>Live Dining Feed • #BiharBowlMoments</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-brand-brown font-display tracking-tight leading-tight">
+                Moments at <span className="bg-gradient-to-r from-brand-orange via-amber-600 to-brand-brown bg-clip-text text-transparent italic font-serif">Bihar Bowl</span>
+              </h2>
+              <p className="text-base sm:text-lg text-brand-brown/75 font-medium mt-2 leading-relaxed">
+                Our customers share their love for authentic Bihari flavors. Join the community!
+              </p>
+            </div>
+
+            <Link 
+              to="/gallery" 
+              className="inline-flex items-center space-x-2 text-brand-orange hover:text-brand-brown font-black text-sm sm:text-base group transition-colors"
+            >
+              <span>View Full Gallery</span>
+              <ChevronRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Looping Rotating Photos Track (Pauses on cursor hover!) */}
+        <div className="relative w-full overflow-hidden group">
+          {/* Edge gradient fade masks */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-[#FAF6EE] to-transparent z-20" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-[#FAF6EE] to-transparent z-20" />
+
+          {/* Continuous scrolling marquee track */}
+          <div className="flex space-x-6 sm:space-x-8 w-max animate-marquee group-hover:[animation-play-state:paused] py-4">
+            {[
+              { id: 101, img: '/gallery1.jpg', title: 'Wood-Fired Litti Bowl', cat: 'Signature Dish', likes: '2.9k' },
+              { id: 102, img: '/gallery2.jpg', title: 'Traditional Earthen Platter', cat: 'Royal Feast', likes: '3.4k' },
+              { id: 103, img: '/gallery3.jpg', title: 'Charcoal Smoked Litti', cat: 'Wood-Fired', likes: '4.1k' },
+              { id: 104, img: '/gallery4.jpg', title: 'Grand Bihari Thali Feast', cat: 'Special Thali', likes: '3.7k' },
+              { id: 105, img: '/gallery_full1.jpg', title: 'Authentic Dining Ambiance', cat: 'Outlet Experience', likes: '2.5k' },
+              { id: 106, img: '/gallery_full2.png', title: 'Earthen Kulhad Service', cat: 'Desi Hospitality', likes: '3.2k' },
+              { id: 107, img: '/gallery_full3.png', title: 'Crisp Golden Crust Litti', cat: 'Fresh Roast', likes: '2.8k' },
+              { id: 108, img: '/gallery_full4.png', title: 'Festive Family Gathering', cat: 'Community Love', likes: '3.6k' },
+              // Duplicate set for seamless infinite loop
+              { id: 201, img: '/gallery1.jpg', title: 'Wood-Fired Litti Bowl', cat: 'Signature Dish', likes: '2.9k' },
+              { id: 202, img: '/gallery2.jpg', title: 'Traditional Earthen Platter', cat: 'Royal Feast', likes: '3.4k' },
+              { id: 203, img: '/gallery3.jpg', title: 'Charcoal Smoked Litti', cat: 'Wood-Fired', likes: '4.1k' },
+              { id: 204, img: '/gallery4.jpg', title: 'Grand Bihari Thali Feast', cat: 'Special Thali', likes: '3.7k' },
+              { id: 205, img: '/gallery_full1.jpg', title: 'Authentic Dining Ambiance', cat: 'Outlet Experience', likes: '2.5k' },
+              { id: 206, img: '/gallery_full2.png', title: 'Earthen Kulhad Service', cat: 'Desi Hospitality', likes: '3.2k' },
+              { id: 207, img: '/gallery_full3.png', title: 'Crisp Golden Crust Litti', cat: 'Fresh Roast', likes: '2.8k' },
+              { id: 208, img: '/gallery_full4.png', title: 'Festive Family Gathering', cat: 'Community Love', likes: '3.6k' },
+            ].map((item, idx) => (
+              <div
+                key={`${item.id}-${idx}`}
+                onClick={() => setSelectedPhoto(item)}
+                className="w-60 sm:w-72 md:w-80 h-60 sm:h-72 md:h-80 rounded-[2rem] overflow-hidden relative shadow-xl hover:shadow-2xl border-2 border-brand-orange/20 hover:border-brand-orange transition-all duration-500 hover:scale-105 shrink-0 cursor-pointer group/card bg-black"
+              >
+                <img 
+                  src={item.img} 
+                  alt={item.title} 
+                  className="w-full h-full object-cover transform group-hover/card:scale-110 transition-transform duration-700 block"
+                  referrerPolicy="no-referrer"
+                />
+                
+                {/* Dark Vignette Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+
+                {/* Category Pill at top */}
+                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20 text-xs font-bold text-amber-300">
+                  {item.cat}
+                </div>
+
+                {/* Bottom Title & Heart likes */}
+                <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+                  <p className="text-white font-black text-sm sm:text-base leading-tight pr-2">
+                    {item.title}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-white/90 bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full shrink-0">
+                    <Heart size={13} className="text-rose-400 fill-rose-400" />
+                    <span>{item.likes}</span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Popular Menu */}
-      <section className="py-24 bg-brand-earth/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-brand-brown mb-4">Popular on the Menu</h2>
-            <p className="text-brand-brown/60 max-w-2xl mx-auto">Handpicked favorites that our customers can't get enough of.</p>
+      {/* Popular Menu Section */}
+      <section className="py-24 bg-gradient-to-b from-[#FAF6EE] via-[#F4EDE0] to-[#FAF6EE] relative overflow-hidden">
+        {/* Subtle decorative background blur orbs */}
+        <div className="absolute top-10 left-10 w-96 h-96 bg-brand-orange/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-brand-brown/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Section Header */}
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/20 text-brand-orange text-xs font-black uppercase tracking-widest mb-3 shadow-sm">
+              <Sparkles size={14} className="text-brand-orange" />
+              <span>Chef's Handpicked Favorites</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-brand-brown font-display tracking-tight mb-4">
+              Popular on the <span className="text-brand-orange italic font-serif">Menu</span>
+            </h2>
+            <p className="text-brand-brown/70 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
+              Steaming wood-charcoal embers, freshly spiced chana sattu, and pure cow desi ghee. Handcrafted favorites that our customers can't get enough of.
+            </p>
+
+            {/* Trending Category Filter Tabs */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-8">
+              {[
+                { id: 'all', label: '👑 All Bestsellers' },
+                { id: 'veg', label: '🥬 Pure Veg Specials' },
+                { id: 'nonveg', label: '🍗 Royal Non-Veg' },
+                { id: 'combos', label: '🍱 Grand Combos' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setPopularCategory(tab.id as any)}
+                  className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer ${
+                    popularCategory === tab.id
+                      ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/30 scale-105 ring-2 ring-brand-orange/30'
+                      : 'bg-white text-brand-brown/80 hover:bg-white/95 hover:text-brand-orange border border-brand-brown/10 shadow-sm'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredItems.map((item) => (
-              <motion.div 
-                key={item.id}
-                whileHover={{ y: -10 }}
-                className="bg-white rounded-[2rem] overflow-hidden shadow-xl border border-brand-brown/5 group"
+          {/* Trending Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-9">
+            <AnimatePresence mode="popLayout">
+              {popularDishes
+                .map(dish => {
+                  const fromApi = featuredItems.find(f => f.name.toLowerCase() === dish.name.toLowerCase());
+                  return fromApi ? { ...dish, price: fromApi.price } : dish;
+                })
+                .filter(item => popularCategory === 'all' ? true : item.category === popularCategory)
+                .slice(0, popularCategory === 'all' ? 3 : 6)
+                .map((item) => (
+                  <motion.div 
+                    layout
+                    initial={{ opacity: 0, y: 25 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.35 }}
+                    key={item.id}
+                    whileHover={{ y: -10 }}
+                    className="bg-white/95 backdrop-blur-md rounded-[2.5rem] overflow-hidden shadow-xl hover:shadow-[0_25px_50px_-12px_rgba(255,107,53,0.22)] border-2 border-brand-brown/10 hover:border-brand-orange/40 group flex flex-col justify-between transition-all duration-500"
+                  >
+                    {/* Uncropped Photo Container with High Quality Framing */}
+                    <div className="relative aspect-[16/11] sm:aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#FFF5E5] via-[#FBF0DD] to-[#ECE0CC] rounded-t-[2.3rem] flex items-center justify-center p-2.5 sm:p-3.5 group/img">
+                      {/* Inner frame */}
+                      <div className="w-full h-full rounded-2xl overflow-hidden relative shadow-inner bg-black/5">
+                        <img 
+                          src={item.image_url} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
+                          referrerPolicy="no-referrer"
+                          loading="lazy"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/littichokha.png';
+                          }}
+                        />
+                        {/* Subtle atmospheric vignette */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                      </div>
+
+                      {/* Floating Bestseller / Signature Badge */}
+                      <div className={`absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-gradient-to-r ${item.badgeColor} text-white text-[11px] font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-lg border border-white/30 backdrop-blur-sm`}>
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                        </span>
+                        <span>{item.badge}</span>
+                      </div>
+
+                      {/* Price Tag in luxury dark glass pill */}
+                      <div className="absolute top-4 right-4 z-10 bg-[#2D1609]/90 hover:bg-[#2D1609] backdrop-blur-md px-3.5 py-1.5 rounded-full text-white font-black text-sm sm:text-base shadow-xl border border-white/20 flex items-center gap-1">
+                        <span className="text-brand-orange text-xs font-bold">₹</span>
+                        <span>{item.price}</span>
+                      </div>
+
+                      {/* Fullscreen Photo Lightbox Button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedPhoto({
+                            id: item.id,
+                            img: item.image_url,
+                            title: item.name,
+                            cat: item.badge,
+                            likes: item.reviews
+                          });
+                        }}
+                        aria-label="View full food photo"
+                        className="absolute bottom-4 right-4 z-10 bg-black/65 hover:bg-brand-orange text-white px-2.5 py-1.5 rounded-xl backdrop-blur-md transition-all shadow-lg hover:scale-110 flex items-center gap-1.5 text-xs font-bold border border-white/20 cursor-pointer"
+                        title="Click to view full uncropped photo"
+                      >
+                        <Maximize2 size={13} />
+                        <span className="text-[11px] hidden sm:inline">Full Photo</span>
+                      </button>
+
+                      {/* Veg / Non-Veg Indicator on image bottom left */}
+                      <div className="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1.5 border border-black/5">
+                        <div className={`w-3.5 h-3.5 border-2 ${item.is_veg ? 'border-emerald-600' : 'border-rose-600'} flex items-center justify-center p-[1.5px]`}>
+                          <div className={`w-full h-full rounded-full ${item.is_veg ? 'bg-emerald-600' : 'bg-rose-600'}`} />
+                        </div>
+                        <span className="text-[10px] font-bold tracking-wider uppercase text-brand-brown/85">
+                          {item.is_veg ? 'Pure Veg' : 'Non-Veg'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Details Section */}
+                    <div className="p-6 sm:p-7 flex flex-col justify-between flex-grow">
+                      <div>
+                        {/* Rating & Prep Meta */}
+                        <div className="flex items-center justify-between text-xs text-brand-brown/70 mb-3">
+                          <div className="flex items-center gap-1 font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200/80">
+                            <Star size={13} className="fill-amber-500 text-amber-500" />
+                            <span>{item.rating}</span>
+                            <span className="text-brand-brown/50 font-normal">({item.reviews})</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-brand-brown/65 font-medium">
+                            <Clock size={12} className="text-brand-orange" />
+                            <span>{item.prepTime}</span>
+                            <span>•</span>
+                            <span>{item.serves}</span>
+                          </div>
+                        </div>
+
+                        {/* Title & Tagline */}
+                        <h3 className="text-2xl font-black text-brand-brown group-hover:text-brand-orange transition-colors font-display tracking-tight leading-snug">
+                          {item.name}
+                        </h3>
+                        <p className="text-xs font-bold text-brand-orange/95 mb-2.5 uppercase tracking-wide">
+                          {item.tagline}
+                        </p>
+                        <p className="text-brand-brown/65 text-sm leading-relaxed mb-4 line-clamp-2">
+                          {item.description}
+                        </p>
+
+                        {/* Feature Highlights Chips */}
+                        <div className="flex flex-wrap gap-1.5 mb-6">
+                          {item.tags.map((tag, i) => (
+                            <span key={i} className="text-[11px] font-bold text-brand-brown/80 bg-brand-earth/50 hover:bg-brand-orange/15 px-2.5 py-1 rounded-full border border-brand-brown/5 transition-colors">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Trending Gradient CTA Button */}
+                      <Link 
+                        to="/menu" 
+                        className="w-full relative group/btn overflow-hidden rounded-2xl bg-gradient-to-r from-brand-orange via-[#E85D04] to-brand-brown text-white py-3.5 px-6 font-bold shadow-lg shadow-brand-orange/20 hover:shadow-brand-orange/40 transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                      >
+                        <span className="absolute inset-0 w-full h-full bg-white/20 transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
+                        <ShoppingBag size={17} className="group-hover/btn:rotate-6 transition-transform" />
+                        <span className="tracking-wide">Order Now Fresh</span>
+                        <ChevronRight size={17} className="group-hover/btn:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
+                  </motion.div>
+                ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Bottom Explore Full Menu banner */}
+          <div className="mt-14 text-center">
+            <div className="inline-flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-brand-brown/10 shadow-xl max-w-3xl mx-auto w-full">
+              <div className="text-left sm:flex-1">
+                <h4 className="font-black text-brand-brown text-base sm:text-lg font-display">Craving more authentic Bihari tastes?</h4>
+                <p className="text-xs sm:text-sm text-brand-brown/65 mt-0.5">Explore our complete 25+ item menu including Champaran Ahuna Handi, Kulhad Chai, Matka Lassi & Combos.</p>
+              </div>
+              <Link 
+                to="/menu"
+                className="shrink-0 bg-brand-brown hover:bg-brand-orange text-white text-xs sm:text-sm font-black px-7 py-3.5 rounded-2xl shadow-lg transition-all flex items-center gap-2 group cursor-pointer"
               >
-                <div className="h-64 overflow-hidden relative">
-                  <img 
-                    src={item.image_url} 
-                    alt={item.name} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-brand-orange font-bold text-sm shadow-lg">
-                    ₹{item.price}
-                  </div>
-                </div>
-                <div className="p-8">
-                  <h4 className="text-2xl font-bold text-brand-brown mb-2 font-display">{item.name}</h4>
-                  <p className="text-brand-brown/60 text-sm mb-6 line-clamp-2">{item.description}</p>
-                  <Link to="/menu" className="w-full bg-brand-brown text-white py-3 rounded-xl font-bold hover:bg-brand-orange transition-all flex items-center justify-center space-x-2">
-                    <span>Order Now</span>
-                    <ChevronRight size={18} />
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
+                <span>Explore Full Menu (25+ Items)</span>
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

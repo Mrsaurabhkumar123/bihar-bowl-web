@@ -31,11 +31,28 @@ import FloatingActions from './components/FloatingActions';
 
 // --- Types ---
 import { MenuItem, CartItem } from './types';
+import { soundManager, isElementClickable } from './utils/audioFeedback';
 
 const App: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUser] = useState<any>(null);
   const [showLogin, setShowLogin] = useState(false);
+
+  // Global Interactive Audio Feedback
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent | PointerEvent) => {
+      if (isElementClickable(e.target)) {
+        soundManager.playClickable();
+      } else {
+        soundManager.playNonClickable();
+      }
+    };
+
+    window.addEventListener('pointerdown', handleGlobalClick, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('pointerdown', handleGlobalClick, { capture: true });
+    };
+  }, []);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
