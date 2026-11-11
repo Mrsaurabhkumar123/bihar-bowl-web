@@ -177,7 +177,7 @@ const Menu: React.FC<MenuProps> = ({ addToCart, user }) => {
                   </div>
                   <div>
                     <h3 className="text-4xl font-black text-brand-orange font-display tracking-tighter">BIHAR BOWL</h3>
-                    <p className="text-[10px] text-brand-brown/60 font-bold uppercase tracking-widest">Vibe Of Positivi-LITTI</p>
+                    <p className="text-[10px] text-brand-brown/60 font-bold uppercase tracking-widest">Bihar Se Bharat Tak, Bharat Se World Tak</p>
                   </div>
                 </div>
                 <div className="text-right">

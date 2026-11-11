@@ -144,9 +144,9 @@ if (menuCount.count === 0) {
   // 4. is_veg: 1 for Veg, 0 for Non-Veg.
   // ==========================================================================
   const seedData = [
-    ["Classic Sattu Litti", "Veg", "Traditional roasted wheat balls stuffed with spiced sattu, served with chokha.", 120, "/menu1.jpg", 1],
-    ["Desi Ghee Litti", "Veg", "Litti dipped in pure desi ghee for an authentic rich taste.", 150, "/menu2.jpg", 1],
-    ["Paneer Litti", "Veg", "Litti stuffed with a mix of sattu and spiced paneer.", 180, "/menu3.png", 1],
+    ["Classic Sattu Litti", "Veg", "Traditional roasted wheat balls stuffed with spiced sattu, served with chokha.", 120, "/littichokha.png", 1],
+    ["Desi Ghee Litti", "Veg", "Litti dipped in pure desi ghee for an authentic rich taste.", 150, "/combo_thali.jpg", 1],
+    ["Paneer Litti", "Veg", "Litti stuffed with a mix of sattu and spiced paneer.", 180, "/menu_paneer_tikka.png", 1],
     ["Mushroom Litti", "Veg", "Litti with a savory mushroom and sattu filling.", 190, "/menu_mushroom.png", 1],
     ["Corn & Cheese Litti", "Veg", "A modern twist with sweet corn and melted cheese.", 210, "/menu_corn_cheese.jpg", 1],
     ["Paneer Tikka Litti", "Veg", "Litti stuffed with smoky paneer tikka and spices.", 230, "/menu_paneer_tikka.png", 1],
@@ -175,10 +175,10 @@ if (menuCount.count === 0) {
   seedData.forEach(item => insert.run(...item));
 }
 
-// Update existing menu items to use local images if they are still using picsum
-db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu1.jpg", "Classic Sattu Litti");
-db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu2.jpg", "Desi Ghee Litti");
-db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu3.png", "Paneer Litti");
+// Update existing menu items to use authentic local dish images
+db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/littichokha.png", "Classic Sattu Litti");
+db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/combo_thali.jpg", "Desi Ghee Litti");
+db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_paneer_tikka.png", "Paneer Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_chicken_curry.png", "Chicken Curry Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_chicken_fry.png", "Chicken Fry Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/combo_platter.png", "Litti Platter");
@@ -186,14 +186,12 @@ db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_mushroom.p
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_corn_cheese.jpg", "Corn & Cheese Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_paneer_tikka.png", "Paneer Tikka Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_mixed_veg.jpg", "Mixed Veg Litti");
-db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_chicken_keema.jpg", "Chicken Keema Litti");
+db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_chicken_keema.png", "Chicken Keema Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_mutton.png", "Mutton Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_fish.png", "Fish Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_egg.png", "Egg Litti");
-db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_chicken_curry.jpg", "Chicken Curry Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_fish_fry.png", "Fish Fry Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_egg_masala.png", "Egg Masala Litti");
-db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/menu_chicken_fry.jpg", "Chicken Fry Litti");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/drink_sattu.jpg", "Sattu Sharbat");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/drink_lassi.jpg", "Matka Lassi");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/drink_chai.jpg", "Masala Chai");
@@ -201,7 +199,6 @@ db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/drink_panna.jpg
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/drink_jaljeera.jpg", "Jaljeera");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/drink_bel.jpg", "Bel Sharbat");
 db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/combo_thali.jpg", "Bihar Bowl Special Thali");
-db.prepare("UPDATE menu SET image_url = ? WHERE name = ?").run("/combo_platter.jpg", "Litti Platter");
 
 db.prepare("UPDATE design_guides SET image_urls = ? WHERE title = ?").run(JSON.stringify(["/design_int1.jpg", "/design_int2.jpg"]), "Rustic Mithila Interior");
 db.prepare("UPDATE design_guides SET image_urls = ? WHERE title = ?").run(JSON.stringify(["/design_kit1.jpg", "/design_kit2.jpg"]), "Standard Kitchen Layout");
